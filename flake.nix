@@ -44,7 +44,8 @@
 }
 ' > rust_layout.kdl
 
-          zellij d --force 'coding_rust_(btw)_in_nvim_(btw)_in_nixos_(btw)' || echo ""
+          zellij d --force 'coding_rust_(btw)_in_nvim_(btw)_in_nixos_(btw)' &> /dev/null
+          mkdir projects &> /dev/null
           chmod +x ./pane-start.sh
           zellij --layout ./rust_layout.kdl
         '';
