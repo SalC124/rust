@@ -1,0 +1,15 @@
+layout {
+    pane {
+        cwd "./projects/"
+        command "~/Code/Personal/rust/pane-start.sh"
+        size "75%"
+    }
+    pane {
+        cwd "./projects/"
+        command "zsh"
+    }
+    pane size=1 borderless=true {
+        plugin location="zellij:status-bar"
+    }
+}
+
