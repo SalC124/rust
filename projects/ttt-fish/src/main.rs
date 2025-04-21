@@ -1,5 +1,5 @@
 fn main() {
-    let inputted_board: [[char; 3]; 3] = [['x', 'o', 'x'], ['o', 'x', ' '], [' ', ' ', 'o']];
+    let inputted_board: [[char; 3]; 3] = [['x', 'o', 'o'], ['o', 'x', 'x'], [' ', 'x', ' ']];
     let mut game: GameState = GameState::from_board(inputted_board);
     game.see_the_future();
 
@@ -10,8 +10,8 @@ fn main() {
 struct GameState {
     board: [[char; 3]; 3],    // the board state
     depth: u8,                // depth in the tree
-    wins: bool,               // is did this position result in a win?
-    player: char,             // what is the current player?
+    wins: u8,                 // 0 if nothing, 1 if win, 2 if lose
+    next_player: char,        // what is the current player?
     children: Vec<GameState>, // its children are a vector of more Game States
 }
 
@@ -21,8 +21,8 @@ impl GameState {
         GameState {
             board,
             depth: 0,
-            wins: false,
-            player: Self::get_player(board),
+            wins: 0,
+            next_player: Self::get_player(board),
             children: Vec::new(),
         }
     }
@@ -39,12 +39,29 @@ impl GameState {
             }
         }
 
-        if x_count == o_count { return 'x'; } else { return 'o'; }
+        if x_count == o_count {
+            'x'
+        } else {
+            'o'
+        }
     }
     // add possible new next moves
     fn see_the_future(&mut self) {
-        if check_win(self.board, self.player) {
-            println!("this board wins:\n{:?}", self.board);
+        if check_win(self.board, if self.next_player == 'o' { 'x' } else { 'o' }) {
+            self.wins = 1; // won
+        }
+
+        if check_win(self.board, self.next_player) {
+            self.wins = 2; // lost
+        }
+
+        if (1..=2).contains(&self.wins) {
+            println!(
+                "this board: {:?} {} at depth {}",
+                self.board,
+                if self.wins == 1 { "wins" } else { "loses" },
+                self.depth
+            );
             return;
         }
 
@@ -52,11 +69,12 @@ impl GameState {
             for col in 0..3 {
                 if self.board[row][col] == ' ' {
                     let mut new_state = self.clone();
-                    new_state.board[row][col] = self.player;
-                    new_state.player = if self.player == 'o' { 'x' } else { 'o' };
+
+                    new_state.board[row][col] = self.next_player;
+                    new_state.next_player = if self.next_player == 'o' { 'x' } else { 'o' };
+                    new_state.depth = self.depth + 1;
 
                     new_state.see_the_future();
-
                     self.children.push(new_state);
                 }
             }
