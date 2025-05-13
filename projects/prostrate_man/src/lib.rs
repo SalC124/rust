@@ -44,9 +44,7 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
         _ => serde_json::from_str(r#"{"error":"your response type isnt valid"}"#)
             .map_err(Box::new)?,
     };
-    let skib: String = res["token"].to_string();
-    println!("{}", skib);
-    println!("{:#?}", res);
+    println!("{}", res);
     Ok(())
 }
 
@@ -61,9 +59,16 @@ async fn get(config: Config) -> Result<Value, Box<dyn Error>> {
     Ok(res)
 }
 async fn post(config: Config) -> Result<Value, Box<dyn Error>> {
-    let res = config
-        .client
-        .post(config.url)
+    let token = config.bearer;
+    let partial_req = config.client.post(config.url);
+
+    let partial_req = if !token.is_empty() {
+        partial_req.bearer_auth(token)
+    } else {
+        partial_req
+    };
+
+    let res = partial_req
         .json(&config.req)
         .send()
         .await?
